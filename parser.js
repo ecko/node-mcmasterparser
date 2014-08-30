@@ -127,6 +127,99 @@ var some_data = APP.readHTMLSchedule('./full_schedule.html', function (data) {
 */
 
 
-APP.readHTMLSchedule('./full_schedule.html', APP.parseHTMLSchedule);
+APP.readHTMLSchedule('./full_schedule.html', function(rawHTML) {
+	APP.parseHTMLSchedule(rawHTML, applyFiltering);
+});
+
+classListCount = function(obj) {
+	var num_total_classes = 0;
+	for (var department in obj) {
+		for (var i = obj[department].length - 1; i >= 0; i--) {
+			num_total_classes++;
+		};
+	}
+	return 	num_total_classes;
+};
+
+applyFiltering = function(classList) {
+
+	//console.log(classList);
+	var num_total_classes = classListCount(classList);
+
+	console.log('dept list count: ', APP.objectLength(classList));
+	console.log('class list count: %s', num_total_classes);
+
+	// loop through and filter off things we don't want
+	var filteredList = {};
+	var valid_departments = [
+		'CHEM ENG', 'COMP ENG', 'CIV ENG', 'ENG PHYS', 'SFWR ENG', 'ELEC ENG', 'MATLS', 'MECH ENG', 'COMP SCI'
+	];
+
+	for (var department in classList) {
+		// does it match the department?
+		/*
+		F.   3 TO 4 UNITS FROM  CHEM ENG LEVEL 3, LEVEL 4  +     
+          COMP ENG LEVEL 3, LEVEL 4  +  CIV ENG LEVEL 3,         
+          LEVEL 4  +  ENG PHYS LEVEL 3, LEVEL 4  +  SFWR ENG     
+          LEVEL 3, LEVEL 4  +  ELEC ENG LEVEL 3, LEVEL 4  +      
+          MATLS LEVEL 3, LEVEL 4  +  MECH ENG LEVEL 3, LEVEL     
+          4  +  COMP SCI LEVEL 3, LEVEL 4                 
+      	*/
+
+      	var is_valid_department = false;
+      	for (var i = valid_departments.length - 1; i >= 0; i--) {
+      		if (department.indexOf(valid_departments[i]) !== -1) {
+				//it matches one of the valid depts
+				is_valid_department = true;
+				break;
+			}
+      	}
+
+      	// skip this department if it didn't match any of the valid depts
+      	if (!is_valid_department) {
+			continue;
+		}
+		
+
+
+		filteredList[department] = [];
+		console.log(department);
+		// loop through this department
+		for (var i = 0; i < classList[department].length; i++) {
+			var course = classList[department][i];
+
+			// skip the first/second year classes
+			if (parseInt(course.courseCode) < 3) {
+				//console.log(course.courseCode, course.courseDesc);
+				continue;
+			}
+
+			// skip the second term classes
+			if (course.courseTerm === 'TERM 2') {
+				continue;
+			}
+
+			// seems to be good so add it to the list
+			filteredList[department][filteredList[department].length] = course;
+		}
+
+		// and finally check if there are any classes left for this department.
+		// if not, delete
+		if (filteredList[department].length <= 0) {
+			delete filteredList[department];
+		}
+
+
+
+
+	}
+
+	console.log('filtered dept list count: ', APP.objectLength(filteredList));
+	console.log('filtered class list count: %s', classListCount(filteredList));
+	
+
+	//console.log(filteredList);
+
+};
 
 
