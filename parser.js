@@ -170,7 +170,8 @@ applyFiltering = function(classList) {
       	for (var i = valid_departments.length - 1; i >= 0; i--) {
       		if (department.indexOf(valid_departments[i]) !== -1) {
 				//it matches one of the valid depts
-				is_valid_department = true;
+				// keep track of it as it's the prefix for course codes
+				is_valid_department = valid_departments[i];
 				break;
 			}
       	}
@@ -199,6 +200,8 @@ applyFiltering = function(classList) {
 				continue;
 			}
 
+			course.coursePrefix = is_valid_department;
+
 			// seems to be good so add it to the list
 			filteredList[department][filteredList[department].length] = course;
 		}
@@ -220,6 +223,30 @@ applyFiltering = function(classList) {
 
 	//console.log(filteredList);
 
+};
+
+
+// I want to do simple GET requets on {http://academiccalendars.romcmaster.ca/content.php}
+// to get a list of the coureses for a dept.
+// then save the resulting page.
+var valid_departments = [
+		'CHEM ENG', 'COMP ENG', 'CIV ENG', 'ENG PHYS', 'SFWR ENG', 'ELEC ENG', 'MATLS', 'MECH ENG', 'COMP SCI'
+	];
+for (var i = valid_departments.length - 1; i >= 0; i--) {
+	//valid_departments[i]
+	var search_url = 'http://academiccalendars.romcmaster.ca/content.php?filter%5B27%5D='+valid_departments[i]+'&filter%5B29%5D=&filter%5Bcourse_type%5D=-1&filter%5Bkeyword%5D=&filter%5B32%5D=1&filter%5Bcpage%5D=1&cur_cat_oid=7&expand=&navoid=558&search_database=Filter&filter%5Bexact_match%5D=1';
+
+	var asdf = function(search_url, valid_department) {
+		APP.makeSimpleGet(search_url, function(data) {
+			// now write the file back out.
+			var filename = './cache_eng_courses/'+valid_department+'.html';
+			APP.writeHTMLFile(filename, data, function(){
+				//
+			});
+		});
+	};
+
+	asdf(search_url, valid_departments[i])
 };
 
 
