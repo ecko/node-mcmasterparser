@@ -158,13 +158,6 @@ MikeStuff.prototype.parseHTMLSchedule = function(rawHTML) {
 
 
 	// @TODO:
-	//		- get the department
-	//		- have hiearchy with departments and courses underneath
-
-	//	-probably going to have to loop row by row.
-	//		- check if the row contains td .label
-	//		- if so, it's a department
-	//		- then loop through all rows after it, until the next .label row
 
 
 
@@ -203,7 +196,7 @@ MikeStuff.prototype.parseHTMLSchedule = function(rawHTML) {
 
 				if (department != old_department) {
 					// we have a new department (this check should never be needed though)
-					console.log(dept[0].children[1].data);
+					//console.log(dept[0].children[1].data);
 					departments.push(department);
 
 					classList[department] = [];
@@ -249,13 +242,6 @@ MikeStuff.prototype.parseHTMLSchedule = function(rawHTML) {
 
 		//console.log(course);
 
-
-
-
-
-		//if (i == 5) {
-		//	break;
-		//}
 
 	};
 
@@ -321,63 +307,8 @@ MikeStuff.prototype.parseHTMLSchedule = function(rawHTML) {
 	console.log('dept list count: ', departments.length);
 	//console.log('dept list count: ', this.objectLength(classList)); // can't seem to call the method...
 
-	//var courses = $('body table tr');
-	//console.log(' # courses: ', courses.length);
 
-	//var courses = $('td[width="30%"]', courses);
-
-	//console.log(table_rows[0].children[0]);
-
-	/*
-	console.log(' # courses: ', $('.nicetable', table_rows).length);
-
-
-	
-
-	return;
-
-	for (var i = 0; i < courses.length; i++) {
-		//console.log($('td', courses[i]).html();
-			console.log(courses[i]);
-
-		var details = $('td', courses[i]);
-
-		for (var i = 0; i < details.length; i++) {
-			//console.log(i, ' => ', details[i]);
-			//console.log(i, ' => ', details[i].data);
-			break;
-		};
-
-		break;
-	};
-	*/
-	/*
-
-	var courses = $('tr td[width="5%"]');
-	console.log(' # courses: ', courses.length);
-	//for (var i = courses.length - 1; i >= 0; i--) {
-	for (var i = 20, limit = courses.length; i < limit; i++) {
-		//courses[i]
-		console.log(courses[i]);
-		
-		var row = courses[i];
-		var courseCode = courses[i].children[0].data;
-		var details = $('td', courses[i].parent);
-		var courseDesc = details[1].children[0].data;
-
-		console.log(courseCode, ' - ', courseDesc);
-
-		//console.log( details );
-
-		//console.log( details[2].children[0].data);
-
-		for (var i = details.length - 1; i >= 0; i--) {
-			console.log(i, ' => ', details[i].children[0].data);
-		};
-
-		break;
-	};
-	*/
+	// now we can go ahead with the filtering.
 
 
 
