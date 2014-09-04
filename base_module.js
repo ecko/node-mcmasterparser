@@ -5,6 +5,7 @@ var fs = require('fs');
 var htmlparser = require('htmlparser2');
 var cheerio = require('cheerio');
 var https = require('https');
+var http = require('http');
 
 /**
  * Expose `MikeStuff`.
@@ -35,6 +36,26 @@ function MikeStuff() {
 	*/
 }
 
+MikeStuff.prototype.makeSimpleGet = function(url, onDoneCallback) {
+	
+	var req = http.get(url, function(res) {
+		//console.log("Got response: " + res.statusCode);
+		var html_file = "";
+
+		res.setEncoding('utf8');
+		res.on('data', function (chunk) {
+			html_file += chunk;
+		});
+
+		res.on('end', function (test) {
+			onDoneCallback(html_file);
+		});
+	})
+
+	req.on('error', function(e) {
+		console.log("Got error: " + e.message);
+	});
+};
 
 MikeStuff.prototype.makeHTTPSRequest = function(options, postData, onDoneCallback) {
 
@@ -137,7 +158,7 @@ MikeStuff.prototype.objectLength = function(object) {
 	}
 };
 
-MikeStuff.prototype.parseHTMLSchedule = function(rawHTML) {
+MikeStuff.prototype.parseHTMLSchedule = function(rawHTML, onDoneCallback) {
 
 
 	$ = cheerio.load(rawHTML, {
@@ -170,8 +191,8 @@ MikeStuff.prototype.parseHTMLSchedule = function(rawHTML) {
 	// need to get the 2 child nodes within this courses array.
 
 	// this gets an array of all the departments.. but still don't know how to tie between courses
-	console.log($('.label', courses[0].parent.parent)[1].children[1].data);
-	console.log(courses[0].parent.prev.prev.children[0].children[1].data); // works for the first department. but not for others...
+	//console.log($('.label', courses[0].parent.parent)[1].children[1].data);
+	//console.log(courses[0].parent.prev.prev.children[0].children[1].data); // works for the first department. but not for others...
 
 	console.log('------');
 	//console.log($('td', courses[3].parent)[0].children[0].data.trim());
@@ -230,6 +251,10 @@ MikeStuff.prototype.parseHTMLSchedule = function(rawHTML) {
 
 				//console.log('course code: %s %s %s', courseCode, courseTerm, courseDay);
 
+				// skip courses not offered this year.
+				if (courseTerm === 'NOT OFFERED') {
+					continue;
+				}
 
 				classList[department][classList[department].length] = {
 					courseCode: courseCode,
@@ -303,13 +328,13 @@ MikeStuff.prototype.parseHTMLSchedule = function(rawHTML) {
 	}
 	*/
 
-	console.log('class list count: ', classList.length);	// this doesn't work because I now have object of departments with sub-array of classes
-	console.log('dept list count: ', departments.length);
+	//console.log('class list count: ', classList.length);	// this doesn't work because I now have object of departments with sub-array of classes
+	//console.log('dept list count: ', departments.length);
 	//console.log('dept list count: ', this.objectLength(classList)); // can't seem to call the method...
 
 
 	// now we can go ahead with the filtering.
-
+	onDoneCallback(classList);
 
 
 };

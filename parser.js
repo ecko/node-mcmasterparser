@@ -200,6 +200,13 @@ applyFiltering = function(classList) {
 				continue;
 			}
 
+			// @TODO:
+			//	- i need to parse the 'cache_eng_courses' files (based on is_valid_department)
+			//		to get the coid=XXXX for each course.
+			//	- with the coid I can make *another* request to get the pre-reqs (use the print view)
+			// here is the print page URL, http://academiccalendars.romcmaster.ca/preview_course.php?catoid=7&coid=36586&print
+
+
 			course.coursePrefix = is_valid_department;
 
 			// seems to be good so add it to the list
@@ -229,6 +236,7 @@ applyFiltering = function(classList) {
 // I want to do simple GET requets on {http://academiccalendars.romcmaster.ca/content.php}
 // to get a list of the coureses for a dept.
 // then save the resulting page.
+/*
 var valid_departments = [
 		'CHEM ENG', 'COMP ENG', 'CIV ENG', 'ENG PHYS', 'SFWR ENG', 'ELEC ENG', 'MATLS', 'MECH ENG', 'COMP SCI'
 	];
@@ -248,5 +256,5 @@ for (var i = valid_departments.length - 1; i >= 0; i--) {
 
 	asdf(search_url, valid_departments[i])
 };
-
+*/
 
