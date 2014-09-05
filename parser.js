@@ -10,6 +10,7 @@ var express = require("express");
 var https = require('https');
 var qs = require('qs');
 var fs = require('fs');
+var cheerio = require('cheerio');
 
 
 var MikeStuff = require('./base_module');
@@ -154,6 +155,7 @@ applyFiltering = function(classList) {
 	var valid_departments = [
 		'CHEM ENG', 'COMP ENG', 'CIV ENG', 'ENG PHYS', 'SFWR ENG', 'ELEC ENG', 'MATLS', 'MECH ENG', 'COMP SCI'
 	];
+	var cached_department_html = {};
 
 	for (var department in classList) {
 		// does it match the department?
@@ -172,6 +174,7 @@ applyFiltering = function(classList) {
 				//it matches one of the valid depts
 				// keep track of it as it's the prefix for course codes
 				is_valid_department = valid_departments[i];
+				//cached_department_html[cached_department_html].html = '';
 				break;
 			}
       	}
@@ -184,6 +187,7 @@ applyFiltering = function(classList) {
 
 
 		filteredList[department] = [];
+		cached_department_html[cached_department_html] = {};
 		console.log(department);
 		// loop through this department
 		for (var i = 0; i < classList[department].length; i++) {
@@ -196,15 +200,71 @@ applyFiltering = function(classList) {
 			}
 
 			// skip the second term classes
-			if (course.courseTerm === 'TERM 2') {
+			if (course.courseTerm !== 'TERM 1') {
 				continue;
 			}
 
+
 			// @TODO:
-			//	- i need to parse the 'cache_eng_courses' files (based on is_valid_department)
-			//		to get the coid=XXXX for each course.
 			//	- with the coid I can make *another* request to get the pre-reqs (use the print view)
 			// here is the print page URL, http://academiccalendars.romcmaster.ca/preview_course.php?catoid=7&coid=36586&print
+
+			
+
+			//cached_department_html[cached_department_html].html = '';
+
+			//console.log(cached_department_html[cached_department_html].html);
+
+			if (cached_department_html[cached_department_html].html === undefined) {
+				// read it in and cache it
+				
+
+				// using read synch is silly but easy work around
+				var filename = './cache_eng_courses/'+is_valid_department+'.html';
+				var text = fs.readFileSync(filename, 'utf-8');
+				cached_department_html[cached_department_html].html = text;
+			}
+
+
+			$ = cheerio.load(cached_department_html[cached_department_html].html, {
+				normalizeWhitespace: true
+			});
+
+			var a_elements = $('a').each(function(i, element) {
+				// this === element
+
+				//console.log($(this).text());
+				if ($(this).text().indexOf(course.courseCode) !== -1) {
+					// match
+					//console.log($(this).text());
+					// get the href and parse it
+					var href = $(this)[0].attribs.href;
+
+					//console.log($(this)[0].attribs.href);
+					//console.log(href.substring(href.indexOf('&coid=')+6));
+
+					course.coid = href.substring(href.indexOf('&coid=')+6);
+					course.niceName = $(this).text();
+
+					// do the request to get the COID data
+					// the following code works.
+					// add some check to see if file already exists instead of redownloading it
+					/*
+					var search_url = 'http://academiccalendars.romcmaster.ca/preview_course.php?catoid=7&coid='+course.coid+'&print';
+					var asdf = function(search_url, coid) {
+						APP.makeSimpleGet(search_url, function(data) {
+							// now write the file back out.
+							var filename = './cache_eng_coids/'+coid+'.html';
+							APP.writeHTMLFile(filename, data, function() {
+								//
+							});
+						});
+					};
+
+					asdf(search_url, course.coid);
+					*/
+				}
+			});
 
 
 			course.coursePrefix = is_valid_department;
@@ -229,7 +289,60 @@ applyFiltering = function(classList) {
 	
 
 	//console.log(filteredList);
+	//getPrereqs(filteredList, valid_departments);
+};
 
+getPrereqs = function(filteredList, valid_departments) {
+	// @TODO:
+	//	- i need to parse the 'cache_eng_courses' files (based on is_valid_department)
+	//		to get the coid=XXXX for each course.
+	//	- with the coid I can make *another* request to get the pre-reqs (use the print view)
+	// here is the print page URL, http://academiccalendars.romcmaster.ca/preview_course.php?catoid=7&coid=36586&print
+
+	var results = [];
+
+	var async = function(arg, callback) {
+		console.log('doing something with %s', arg);
+		callback(arg);
+	};
+
+	var final = function() {
+		console.log('all done');
+		//console.log(filteredList);
+	};
+
+	valid_departments.forEach(function(item) {
+		async(item, function(result) {
+			results.push(result);
+			if (results.length == valid_departments.length) {
+				final();
+			}
+		})
+	});
+
+
+
+
+	/*
+
+
+	var asdf = function(department, course, valid_department) {
+		var filename = './cache_eng_courses/'+valid_department+'.html';
+
+		APP.readHTMLFile(filename, function (data) {
+			course.testing = 'asdf';
+
+
+			course.coursePrefix = is_valid_department;
+
+			// seems to be good so add it to the list
+			//filteredList = course;
+
+			console.log(course);
+		});
+	};
+	asdf(department, course, is_valid_department);
+	*/
 };
 
 
